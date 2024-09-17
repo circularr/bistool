@@ -1,40 +1,81 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Business Model Comparison Tool
+
+This project is an interactive web application for comparing Free Trial and Freemium business models. It provides a sophisticated economic analysis based on various parameters such as Customer Acquisition Cost (CAC), Customer Lifetime Value (CLV), discount rates, and network effects.
+
+## Features
+
+- Interactive input form for model parameters
+- Real-time calculation of Net Present Value (NPV) for both models
+- Break-even analysis
+- Adoption curve visualization and customization
+- Responsive design for mobile and desktop
+- Multiple display modes: Interactive Model, Academic Paper, Magazine Article, and Simple Explanation
+
+## Technologies Used
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- React-Tooltip
+- Recharts for data visualization
+- Jest for testing
 
 ## Getting Started
 
-First, run the development server:
+To run this project locally:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1. Clone the repository:
+   ```
+   git clone https://github.com/your-username/business-model-comparison.git
+   ```
+
+2. Navigate to the project directory:
+   ```
+   cd business-model-comparison
+   ```
+
+3. Install dependencies:
+   ```
+   npm install
+   ```
+
+4. Run the development server:
+   ```
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
+
+## Testing
+
+To run the tests:
+
+```
+npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The tests are located in `src/utils/calculations.test.ts` and cover various scenarios for both the Free Trial and Freemium models.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Model Details
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+The economic model used in this tool is based on advanced concepts including:
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+- S-curve adoption for the Freemium model
+- Time value of money (discount rates)
+- Customer Acquisition Costs (CAC)
+- Customer Lifetime Value (CLV)
+- Network effects
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+For a detailed explanation of the model
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+This project is optimized for deployment on Vercel. Follow the standard Vercel deployment process for Next.js applications.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+This project is licensed under the MIT License.

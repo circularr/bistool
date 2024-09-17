@@ -1,0 +1,14 @@
+/* Add this to your globals.css file */
+.react-tooltip {
+  background-color: #f8fafc !important; /* Light gray background */
+  color: #1e293b !important; /* Dark gray text */
+  border: 1px solid #e2e8f0 !important; /* Light border */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  font-size: 0.875rem !important;
+  padding: 0.5rem 1rem !important;
+  max-width: 300px !important;
+}
+
+.react-tooltip-arrow {
+  display: none !important;
+}

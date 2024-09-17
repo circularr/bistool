@@ -1,0 +1,136 @@
+{
+    "parameters": [
+      {
+        "name": "N",
+        "fullName": "Total Number of Initial Users",
+        "industryTerm": "User Base",
+        "eli5": "Think of this as how many friends you invite to your birthday party. If you invite more friends, it's like saying your party can become bigger and more fun!",
+        "definition": "The initial count of users your model will simulate.",
+        "inputRange": "100 to 1,000,000",
+        "example": "For a niche B2B SaaS, 1,000 initial users might be realistic, while a consumer app might target 100,000+",
+        "industryBenchmark": "Varies widely; for SaaS startups, 10-1000 initial users is common",
+        "source": "https://www.forentrepreneurs.com/saas-metrics-2/",
+        "unit": "users"
+      },
+      {
+        "name": "P",
+        "fullName": "Price of the Full/Premium Version per Period ($)",
+        "industryTerm": "Pricing",
+        "eli5": "This is like the ticket price for a fun ride. If the ticket is too expensive, fewer friends will want to ride it. If it's cheap, more friends might try it out!",
+        "definition": "Monthly or annual subscription fee for the premium version.",
+        "inputRange": "$5 to $1000+ per month",
+        "example": "$49/month for a mid-tier B2B SaaS product",
+        "industryBenchmark": "Median price for B2B SaaS is $400/month, but varies widely based on product complexity and target market",
+        "source": "https://openviewpartners.com/blog/saas-pricing-strategy/",
+        "unit": "$ per month"
+      },
+      {
+        "name": "C_TRIAL",
+        "fullName": "Conversion Rate for the Free Trial Model (%)",
+        "industryTerm": "Trial-to-Paid Conversion Rate",
+        "eli5": "Imagine you let friends try your new toy for free. The conversion rate is how many friends liked playing with the toy so much that they want to bring their own toy next time to keep playing.",
+        "definition": "The percentage of trial users who convert to paying customers.",
+        "inputRange": "1% to 25%",
+        "example": "A 15% conversion rate for a B2B SaaS product with a 14-day free trial",
+        "industryBenchmark": "Median free trial conversion rate is around 15%, but top performers can reach 25%+",
+        "source": "https://www.profitwell.com/recur/all/free-trial-conversion-rate-benchmarks",
+        "unit": "%"
+      },
+      {
+        "name": "A",
+        "fullName": "Steepness of the S-Shaped Conversion Curve (Freemium)",
+        "industryTerm": "Adoption Rate",
+        "eli5": "This is like how quickly a slide goes from being flat at the top to really steep. A steeper slide means your friends slide down faster, just like more users quickly deciding they love your product!",
+        "definition": "Determines how rapidly the conversion rate increases during the adoption phase. Higher values lead to a steeper curve and faster adoption. This parameter is closely related to the Forecast Horizon (T).",
+        "inputRange": "0.1 to 1.0",
+        "example": "0.3 for a gradual adoption (less steep), 0.7 for a rapid adoption (steeper)",
+        "industryBenchmark": "Varies widely based on product and market. Typically, 0.3-0.5 for B2B products, 0.5-0.8 for consumer apps",
+        "source": "https://www.sciencedirect.com/science/article/pii/S0040162520310477",
+        "unit": "unitless"
+      },
+      {
+        "name": "B",
+        "fullName": "Inflection Point of the S-Shaped Conversion Curve (Freemium)",
+        "industryTerm": "Tipping Point",
+        "eli5": "This is the moment on the slide where it starts to get really steep. If this point is reached early, it means your friends start sliding down really fast, sooner!",
+        "definition": "The time period at which the adoption rate begins to significantly accelerate.",
+        "inputRange": "1 to 24",
+        "example": "6 months for a product with moderate market traction",
+        "industryBenchmark": "Varies based on product complexity and market education needed",
+        "source": "https://hbr.org/2015/05/the-science-of-lean-software-and-the-lean-startup",
+        "unit": "months"
+      },
+      {
+        "name": "R",
+        "fullName": "Retention Rate per Period (%)",
+        "industryTerm": "Customer Retention",
+        "eli5": "If you have a box of cookies and you see how many are left after a day, that's like retention. If most are still there, it means they are being saved and enjoyed longer.",
+        "definition": "The proportion of users who continue to subscribe after the initial purchase period.",
+        "inputRange": "60% to 95%",
+        "example": "88% monthly retention for a successful SaaS product",
+        "industryBenchmark": "85%+ is considered strong in subscription-based models",
+        "source": "https://www.profitwell.com/recur/all/saas-retention-benchmarks",
+        "unit": "%"
+      },
+      {
+        "name": "CAC",
+        "fullName": "Customer Acquisition Cost ($)",
+        "industryTerm": "CAC",
+        "eli5": "Imagine you're having a lemonade stand and you need to make signs to attract people. The money you spend on making signs is like the CAC, and you hope it's not more than what you earn from selling lemonade.",
+        "definition": "The average expense of gaining one new customer.",
+        "inputRange": "$1 to $1,000+",
+        "example": "$300 for a mid-market B2B SaaS product",
+        "industryBenchmark": "Median CAC for B2B SaaS is $205, but can range from $100 to $500+ depending on the industry and target market",
+        "source": "https://www.profitwell.com/recur/all/state-of-saas-customer-acquisition-cost",
+        "unit": "$"
+      },
+      {
+        "name": "D",
+        "fullName": "Discount Rate (%)",
+        "industryTerm": "WACC (Weighted Average Cost of Capital)",
+        "eli5": "This is like when you're saving up to buy a toy, and you're trying to figure out if it's better to save your allowance now or spend it. A higher discount rate means you'd rather keep your allowance to spend later because the toy might get cheaper.",
+        "definition": "The interest rate used to discount future cash flows to their present value.",
+        "inputRange": "5% to 20%",
+        "example": "10% for a stable market with moderate risk",
+        "industryBenchmark": "For SaaS companies, typically 8-15% depending on risk assessment and growth stage",
+        "source": "https://corporatefinanceinstitute.com/resources/valuation/discount-rate/",
+        "unit": "%"
+      },
+      {
+        "name": "G",
+        "fullName": "Network Growth Rate (%)",
+        "industryTerm": "Organic Growth Rate",
+        "eli5": "This is like how quickly news about your lemonade stand spreads in the neighborhood. If the news spreads super fast, more people come to buy your lemonade!",
+        "definition": "Annual percentage growth of your user base due to network effects and organic growth.",
+        "inputRange": "5% to 100%+",
+        "example": "30% annual growth for a product with strong network effects",
+        "industryBenchmark": "Top-performing SaaS companies aim for 20%+ year-over-year growth, with some achieving 100%+ in early stages",
+        "source": "https://www.mckinsey.com/industries/technology-media-and-telecommunications/our-insights/grow-fast-or-die-slow-why-unicorns-are-staying-private",
+        "unit": "%"
+      },
+      {
+        "name": "T",
+        "fullName": "Total Time Periods Considered (Months)",
+        "industryTerm": "Forecast Horizon",
+        "eli5": "This is how long you plan to keep your lemonade stand open. Planning for more months means you're thinking about how much lemonade you'll sell over a longer time, like over the whole summer!",
+        "definition": "The duration over which the model forecasts.",
+        "inputRange": "12 to 60",
+        "example": "36 months for a medium-term forecast",
+        "industryBenchmark": "SaaS companies often use 3-5 year (36-60 month) forecasts for strategic planning",
+        "source": "https://www.pwc.com/us/en/services/consulting/analytics/predictive-modeling.html",
+        "unit": "months"
+      },
+      {
+        "name": "ACP",
+        "fullName": "Adoption Curve Profile",
+        "industryTerm": "Growth Trajectory",
+        "eli5": "Imagine drawing a line that shows how quickly people start loving your lemonade over time. Is it a slow start with a big jump later, or does it grow steadily from the beginning?",
+        "definition": "A visual representation of how quickly users adopt the product over time, combining aspects of the steepness (A) and inflection point (B) of the S-shaped conversion curve.",
+        "inputRange": "Custom curve drawing",
+        "example": "Slow initial growth followed by rapid acceleration after 6 months",
+        "industryBenchmark": "Varies widely based on product type, market, and marketing strategy",
+        "source": "https://www.productplan.com/glossary/technology-adoption-lifecycle/",
+        "unit": "curve shape"
+      }
+    ]
+  }

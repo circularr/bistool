@@ -1,115 +1,292 @@
-import Image from "next/image";
-import localFont from "next/font/local";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import InputForm from '../components/InputForm';
+import ResultsDisplay from '../components/ResultsDisplay';
+import PaperDisplay from '../components/PaperDisplay';
+import AdoptionCurveDrawer from '../components/AdoptionCurveDrawer';
+import { calculateTrialNPV, calculateFreemiumNPV } from '../utils/calculations';
+import { Tooltip } from 'react-tooltip';
+import { useRouter } from 'next/router';
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+type DisplayMode = 'model' | 'paper' | 'magazine' | 'eli5';
 
-export default function Home() {
-  return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/pages/index.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+const HomePage: React.FC = () => {
+  const initialParams = {
+    N: 10000,
+    p: 10,
+    c_trial: 0.1,
+    a: 1,
+    b: 6,
+    r: 0.95,
+    CAC: 5,
+    d: 0.1,
+    g: 0.05,
+    T: 12,
+  };
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const [params, setParams] = useState(initialParams);
+  const [results, setResults] = useState<{
+    trialNPV: number;
+    freemiumNPV: number;
+    breakEvenMonth: number | null;
+    monthlyData: { month: number; trialNPV: number; freemiumNPV: number; trialMAU: number; freemiumMAU: number }[];
+  } | null>(null);
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('model');
+  const [isMobile, setIsMobile] = useState(false);
+  const [showInputs, setShowInputs] = useState(false);
+  const [showAdoptionCurve, setShowAdoptionCurve] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const calculateResults = (currentParams: typeof params) => {
+    const trialNPV = calculateTrialNPV(currentParams);
+    const freemiumNPV = calculateFreemiumNPV(currentParams);
+
+    let breakEvenMonth = null;
+    let cumulativeTrialNPV = 0;
+    let cumulativeFreemiumNPV = 0;
+    const monthlyData = [];
+    for (let t = 1; t <= currentParams.T; t++) {
+      const paramsAtT = { ...currentParams, T: t };
+      const monthlyTrialNPV = calculateTrialNPV(paramsAtT);
+      const monthlyFreemiumNPV = calculateFreemiumNPV(paramsAtT);
+      cumulativeTrialNPV += monthlyTrialNPV;
+      cumulativeFreemiumNPV += monthlyFreemiumNPV;
+      
+      const trialMAU = currentParams.N * currentParams.c_trial * Math.pow(currentParams.r, t - 1);
+      const freemiumMAU = currentParams.N * Math.pow(1 + currentParams.g, t - 1);
+      
+      monthlyData.push({
+        month: t,
+        trialNPV: cumulativeTrialNPV,
+        freemiumNPV: cumulativeFreemiumNPV,
+        trialMAU,
+        freemiumMAU,
+      });
+      if (cumulativeFreemiumNPV >= cumulativeTrialNPV && breakEvenMonth === null) {
+        breakEvenMonth = t;
+      }
+    }
+
+    setResults({
+      trialNPV,
+      freemiumNPV,
+      breakEvenMonth,
+      monthlyData,
+    });
+  };
+
+  useEffect(() => {
+    calculateResults(params);
+  }, [params]);
+
+  const handleParamChange = (newParams: typeof params) => {
+    setParams(newParams);
+    calculateResults(newParams);
+  };
+
+  const resetAll = () => {
+    router.reload();
+  };
+
+  const toggleAdoptionCurve = () => {
+    setShowAdoptionCurve(prev => !prev);
+  };
+
+  const toggleInputs = () => {
+    setShowInputs(prev => !prev);
+  };
+
+  const renderMobileView = () => (
+    <div className="min-h-screen bg-gray-100 p-4">
+      <h1 className="text-2xl font-bold text-center mb-4">Free Trial vs Freemium</h1>
+      
+      <AnimatePresence>
+        {!showInputs && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <ResultsDisplay results={results} T={params.T} />
+            <button
+              onClick={toggleInputs}
+              className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
+            >
+              Adjust Parameters
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showInputs && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <InputForm
+              initialParams={params}
+              onParamChange={handleParamChange}
+              onReset={resetAll}
+              onAdoptionCurveToggle={toggleAdoptionCurve}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <button
+              onClick={toggleInputs}
+              className="mt-4 w-full bg-green-500 text-white py-2 px-4 rounded-lg shadow hover:bg-green-600 transition duration-300"
+            >
+              View Results
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAdoptionCurve && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <div className="bg-white rounded-lg p-4 w-full max-w-md">
+              <AdoptionCurveDrawer
+                onChange={(newParams) => handleParamChange({ ...params, ...newParams })}
+                initialA={params.a}
+                initialB={params.b}
+                N={params.N}
+                T={params.T}
+              />
+              <button
+                onClick={toggleAdoptionCurve}
+                className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-}
+
+  const renderDesktopView = () => (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <h1 className="text-3xl font-bold text-center mb-8">Free Trial vs Freemium Model Comparison</h1>
+      <div className="grid grid-cols-2 gap-8">
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Input Parameters</h2>
+          <InputForm
+            initialParams={params}
+            onParamChange={handleParamChange}
+            onReset={resetAll}
+            onAdoptionCurveToggle={toggleAdoptionCurve}
+          />
+        </div>
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Results</h2>
+          <ResultsDisplay results={results} T={params.T} />
+        </div>
+      </div>
+      {showAdoptionCurve && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <AdoptionCurveDrawer
+              onChange={(newParams) => handleParamChange({ ...params, ...newParams })}
+              initialA={params.a}
+              initialB={params.b}
+              N={params.N}
+              T={params.T}
+            />
+            <button
+              onClick={toggleAdoptionCurve}
+              className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 sm:p-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+              Free Trial vs Freemium
+            </h1>
+            <p className="text-blue-100 text-lg sm:text-xl">
+              Model Comparison Tool
+            </p>
+          </div>
+          <div className="p-4 sm:p-6 bg-white">
+            <p className="text-gray-600 mb-6">
+              Compare economic impacts of Free Trial and Freemium models with our interactive analysis tool.
+            </p>
+            {!isMobile && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {(['model', 'paper', 'magazine', 'eli5'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setDisplayMode(mode)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${
+                      displayMode === mode 
+                        ? 'bg-indigo-600 text-white' 
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {mode === 'model' ? 'Interactive Model' : mode === 'paper' ? 'Academic Paper' : mode === 'magazine' ? 'Magazine Article' : 'Simple Explanation'}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-8">
+          {isMobile ? renderMobileView() : renderDesktopView()}
+        </div>
+
+        <footer className="mt-12 text-center text-gray-500">
+          <p className="mb-4">
+            Created by Claude, Omni, Cursor, and Perplexity | Contributor: Paul Harwood
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-4 mb-4">
+            <a
+              href="https://github.com/circularr/bistool"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-gray-700 transition duration-300"
+            >
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+              GitHub
+            </a>
+            <a
+              href="https://www.linkedin.com/in/paul-harwood-2aa535228/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition duration-300"
+            >
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+              LinkedIn
+            </a>
+          </div>
+        </footer>
+      </main>
+    </div>
+  );
+};
+
+export default HomePage;
