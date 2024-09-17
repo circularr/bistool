@@ -2,13 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputForm from '../components/InputForm';
 import ResultsDisplay from '../components/ResultsDisplay';
-import PaperDisplay from '../components/PaperDisplay';
 import AdoptionCurveDrawer from '../components/AdoptionCurveDrawer';
 import { calculateTrialNPV, calculateFreemiumNPV } from '../utils/calculations';
 import { Tooltip } from 'react-tooltip';
 import { useRouter } from 'next/router';
-
-type DisplayMode = 'model' | 'paper' | 'magazine' | 'eli5';
 
 const HomePage: React.FC = () => {
   const initialParams = {
@@ -31,7 +28,6 @@ const HomePage: React.FC = () => {
     breakEvenMonth: number | null;
     monthlyData: { month: number; trialNPV: number; freemiumNPV: number; trialMAU: number; freemiumMAU: number }[];
   } | null>(null);
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('model');
   const [isMobile, setIsMobile] = useState(false);
   const [showInputs, setShowInputs] = useState(false);
   const [showAdoptionCurve, setShowAdoptionCurve] = useState(false);
@@ -142,9 +138,9 @@ const HomePage: React.FC = () => {
             />
             <button
               onClick={toggleInputs}
-              className="mt-4 w-full bg-green-500 text-white py-2 px-4 rounded-lg shadow hover:bg-green-600 transition duration-300"
+              className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
             >
-              View Results
+              Show Results
             </button>
           </motion.div>
         )}
@@ -230,28 +226,6 @@ const HomePage: React.FC = () => {
             <p className="text-blue-100 text-lg sm:text-xl">
               Model Comparison Tool
             </p>
-          </div>
-          <div className="p-4 sm:p-6 bg-white">
-            <p className="text-gray-600 mb-6">
-              Compare economic impacts of Free Trial and Freemium models with our interactive analysis tool.
-            </p>
-            {!isMobile && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {(['model', 'paper', 'magazine', 'eli5'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setDisplayMode(mode)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${
-                      displayMode === mode 
-                        ? 'bg-indigo-600 text-white' 
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    {mode === 'model' ? 'Interactive Model' : mode === 'paper' ? 'Academic Paper' : mode === 'magazine' ? 'Magazine Article' : 'Simple Explanation'}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
