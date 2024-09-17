@@ -184,7 +184,7 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
               value={aInput}
               onChange={(e) => handleManualInput('a', e.target.value)}
               onBlur={() => setAInput(a.toFixed(2))}
-              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md text-gray-800"
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
               <span className="text-gray-500 sm:text-sm" id="price-currency">
@@ -203,7 +203,7 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
               value={bInput}
               onChange={(e) => handleManualInput('b', e.target.value)}
               onBlur={() => setBInput(b.toFixed(2))}
-              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md text-gray-800"
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
               <span className="text-gray-500 sm:text-sm" id="price-currency">
