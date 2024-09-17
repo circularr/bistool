@@ -212,6 +212,9 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
           className="w-full border border-gray-200 rounded-lg shadow-inner cursor-pointer mb-4"
         />
       </div>
+      <p className="text-sm text-gray-600 mb-4">
+        The Adoption Curve shows how a product gains users over time, typically following an S-shape, with the inflection point being the moment when adoption growth is fastest and the curve changes from concave to convex.
+      </p>
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

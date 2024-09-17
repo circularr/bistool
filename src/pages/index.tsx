@@ -209,8 +209,11 @@ const HomePage: React.FC = () => {
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
               Free Trial vs Freemium
             </h1>
-            <p className="text-blue-100 text-lg sm:text-xl">
+            <p className="text-blue-100 text-lg sm:text-xl italic">
               Model Comparison Tool
+            </p>
+            <p className="text-blue-100 text-sm mt-2">
+              Free trial: full features, limited time. Freemium: basic features free, paid upgrades.
             </p>
           </div>
         </div>
