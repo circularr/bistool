@@ -1,6 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Tooltip } from 'react-tooltip';
-import ReactMarkdown from 'react-markdown';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 
 interface AdoptionCurveDrawerProps {
   onChange: (params: { a: number; b: number }) => void;
@@ -16,25 +14,21 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
   const [b, setB] = useState(initialB);
   const [aInput, setAInput] = useState(initialA.toFixed(2));
   const [bInput, setBInput] = useState(initialB.toFixed(2));
-  const [showSCurveInfo, setShowSCurveInfo] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  useEffect(() => {
-    const resizeCanvas = () => {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetWidth * 0.5; // Maintain a 2:1 aspect ratio
-        drawCurve();
-      }
-    };
+  const formatValue = useCallback((value: number) => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+    return value.toFixed(0);
+  }, []);
 
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    return () => window.removeEventListener('resize', resizeCanvas);
-  }, [a, b, N, T]);
+  const formatXAxis = useCallback((value: number) => {
+    if (T > 60) {
+      return `${(value / 12).toFixed(0)}Y`;
+    }
+    return value.toString();
+  }, [T]);
 
-  const drawCurve = () => {
+  const drawCurve = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -108,7 +102,22 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
       ctx.fillStyle = 'black';
       ctx.fillText(['Start', 'Inflection', 'Saturation'][index], point.x + 5, point.y - 5);
     });
-  };
+  }, [a, b, N, T, formatXAxis, formatValue]);
+
+  useEffect(() => {
+    const resizeCanvas = () => {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetWidth * 0.5; // Maintain a 2:1 aspect ratio
+        drawCurve();
+      }
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    return () => window.removeEventListener('resize', resizeCanvas);
+  }, [drawCurve]);
 
   const updateCurve = (newA: number, newB: number) => {
     setA(newA);
@@ -148,33 +157,6 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
         updateCurve(a, numValue);
       }
     }
-  };
-
-  const sCurveTooltip = `
-    The Adoption Curve shows how users adopt your product over time:
-    1. Slow start: Few early adopters
-    2. Rapid growth: Product catches on
-    3. Plateau: Market saturation
-  `;
-
-  const inflectionTooltip = `
-    The inflection point is where growth really takes off:
-    - User adoption accelerates
-    - Network effects become noticeable
-    - Value becomes clear to users
-  `;
-
-  const formatValue = (value: number) => {
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
-    return value.toFixed(0);
-  };
-
-  const formatXAxis = (value: number) => {
-    if (T > 60) {
-      return `${(value / 12).toFixed(0)}Y`;
-    }
-    return value;
   };
 
   return (

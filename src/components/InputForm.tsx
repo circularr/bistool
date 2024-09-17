@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import keyTerms from '../pages/data/keyterms.json';
-import AdoptionCurveDrawer from './AdoptionCurveDrawer';
 import { Tooltip } from 'react-tooltip';
 
 interface InputFormProps {
@@ -38,12 +37,6 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
     }
     
     const newParams = { ...params, [name]: newValue };
-    setParams(newParams);
-    onParamChange(newParams);
-  };
-
-  const handleAdoptionCurveChange = ({ a, b }: { a: number; b: number }) => {
-    const newParams = { ...params, a, b };
     setParams(newParams);
     onParamChange(newParams);
   };
@@ -112,7 +105,7 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
       </div>
       <button
         onClick={onAdoptionCurveToggle}
-        className="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 transition duration-300"
+        className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
       >
         Adjust Adoption Curve
       </button>

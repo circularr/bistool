@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputForm from '../components/InputForm';
 import ResultsDisplay from '../components/ResultsDisplay';
 import AdoptionCurveDrawer from '../components/AdoptionCurveDrawer';
 import { calculateTrialNPV, calculateFreemiumNPV } from '../utils/calculations';
-import { Tooltip } from 'react-tooltip';
 import { useRouter } from 'next/router';
 
 const HomePage: React.FC = () => {
@@ -42,7 +41,7 @@ const HomePage: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const calculateResults = (currentParams: typeof params) => {
+  const calculateResults = useCallback((currentParams: typeof params) => {
     const trialNPV = calculateTrialNPV(currentParams);
     const freemiumNPV = calculateFreemiumNPV(currentParams);
 
@@ -78,11 +77,11 @@ const HomePage: React.FC = () => {
       breakEvenMonth,
       monthlyData,
     });
-  };
+  }, []);
 
   useEffect(() => {
     calculateResults(params);
-  }, [params]);
+  }, [params, calculateResults]);
 
   const handleParamChange = (newParams: typeof params) => {
     setParams(newParams);
@@ -177,24 +176,25 @@ const HomePage: React.FC = () => {
 
   const renderDesktopView = () => (
     <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Free Trial vs Freemium Model Comparison</h1>
-      <div className="grid grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-2xl font-semibold mb-4">Input Parameters</h2>
-          <InputForm
-            initialParams={params}
-            onParamChange={handleParamChange}
-            onReset={resetAll}
-            onAdoptionCurveToggle={toggleAdoptionCurve}
-          />
-        </div>
-        <div>
-          <h2 className="text-2xl font-semibold mb-4">Results</h2>
-          <ResultsDisplay results={results} T={params.T} />
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-semibold mb-4">Input Parameters</h2>
+            <InputForm
+              initialParams={params}
+              onParamChange={handleParamChange}
+              onReset={resetAll}
+              onAdoptionCurveToggle={toggleAdoptionCurve}
+            />
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-semibold mb-4">Results</h2>
+            <ResultsDisplay results={results} T={params.T} />
+          </div>
         </div>
       </div>
       {showAdoptionCurve && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <AdoptionCurveDrawer
               onChange={(newParams) => handleParamChange({ ...params, ...newParams })}

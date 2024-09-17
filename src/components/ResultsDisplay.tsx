@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface ResultsDisplayProps {
@@ -15,6 +15,19 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, T }) => {
   const [showMAU, setShowMAU] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const formatValue = useCallback((value: number) => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+    return value.toFixed(0);
+  }, []);
+
+  const formatXAxis = useCallback((value: number) => {
+    if (T > 60) {
+      return `${(value / 12).toFixed(0)}Y`;
+    }
+    return value.toString();
+  }, [T]);
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -28,25 +41,22 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, T }) => {
     return <div>Loading results...</div>;
   }
 
-  const formatValue = (value: number) => {
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
-    return value.toFixed(0);
-  };
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: Array<{
+      name: string;
+      value: number;
+      color: string;
+    }>;
+    label?: string | number;
+  }
 
-  const formatXAxis = (value: number) => {
-    if (T > 60) {
-      return `${(value / 12).toFixed(0)}Y`;
-    }
-    return value;
-  };
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-2 rounded shadow-lg border border-gray-200 text-xs">
-          <p className="font-bold">{`${T > 60 ? 'Year' : 'Month'}: ${T > 60 ? (label / 12).toFixed(1) : label}`}</p>
-          {payload.map((pld: any, index: number) => (
+          <p className="font-bold">{`${T > 60 ? 'Year' : 'Month'}: ${T > 60 ? (Number(label) / 12).toFixed(1) : label}`}</p>
+          {payload.map((pld, index) => (
             <p key={index} style={{ color: pld.color }}>
               {`${pld.name}: ${formatValue(pld.value)}`}
             </p>
