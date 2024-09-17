@@ -150,7 +150,7 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
 
     if (clickedPoint !== -1) {
       setIsDragging(true);
-      setDragPoint(['start', 'inflection', 'saturation'][clickedPoint]);
+      setDragPoint(['start', 'inflection', 'saturation'][clickedPoint] as 'start' | 'inflection' | 'saturation');
     }
   };
 

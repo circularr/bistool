@@ -92,7 +92,7 @@ export const calculateMonthlyData = (params: Params): MonthlyData[] => {
   const monthlyData: MonthlyData[] = [];
   let trialNPV = 0;
   let freemiumNPV = 0;
-  let trialUsers = params.N;
+  const trialUsers = params.N;
   let freemiumUsers = params.N;
 
   for (let t = 1; t <= params.T; t++) {
