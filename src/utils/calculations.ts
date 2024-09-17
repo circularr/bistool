@@ -27,24 +27,17 @@ const sCurve = (t: number, a: number, b: number): number => {
 export const calculateTrialNPV = (params: Params): number => {
   const { N, p, c_trial, r, CAC, d, T } = params;
   let NPV = 0;
+  let payingUsers = 0;
 
   for (let t = 1; t <= T; t++) {
-    // Users who convert and are retained
-    const users = N * c_trial * Math.pow(r, t - 1);
+    const newTrialUsers = N;
+    const newPayingUsers = newTrialUsers * c_trial;
+    payingUsers = (payingUsers * r) + newPayingUsers;
     
-    // Revenue
-    const revenue = users * p;
-    
-    // Costs (CAC applied to all converted users, as per the paper)
-    const costs = t === 1 ? N * c_trial * CAC : 0;
-    
-    // Cash flow
+    const revenue = payingUsers * p;
+    const costs = newPayingUsers * CAC;
     const cashFlow = revenue - costs;
-    
-    // Discount factor
     const discountFactor = Math.pow(1 + d, -t);
-    
-    // NPV for this period
     NPV += cashFlow * discountFactor;
   }
 
@@ -92,14 +85,17 @@ export const calculateMonthlyData = (params: Params): MonthlyData[] => {
   const monthlyData: MonthlyData[] = [];
   let trialNPV = 0;
   let freemiumNPV = 0;
-  let trialUsers = params.N;
+  let trialPayingUsers = 0;
   let freemiumUsers = params.N;
 
   for (let t = 1; t <= params.T; t++) {
     // Trial calculations
-    const trialPayingUsers = trialUsers * params.c_trial * Math.pow(params.r, t - 1);
+    const newTrialUsers = params.N;  // Assume constant new trials each month
+    const newPayingUsers = newTrialUsers * params.c_trial;
+    trialPayingUsers = (trialPayingUsers * params.r) + newPayingUsers;
+    
     const trialRevenue = trialPayingUsers * params.p;
-    const trialCosts = t === 1 ? trialUsers * params.c_trial * params.CAC : 0;
+    const trialCosts = newPayingUsers * params.CAC;
     const trialCashFlow = trialRevenue - trialCosts;
     trialNPV += trialCashFlow * Math.pow(1 + params.d, -t);
 
@@ -116,12 +112,11 @@ export const calculateMonthlyData = (params: Params): MonthlyData[] => {
       month: t,
       trialNPV,
       freemiumNPV,
-      trialMAU: trialPayingUsers,  // Changed from trialUsers to trialPayingUsers
+      trialMAU: trialPayingUsers,
       freemiumMAU: freemiumUsers,
     });
 
     // Update user numbers for next month
-    trialUsers *= params.r;  // Apply retention rate to trial users
     freemiumUsers *= (1 + params.g);
   }
 

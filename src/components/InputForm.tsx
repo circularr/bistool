@@ -111,7 +111,7 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
           Adjust Adoption Curve
         </button>
         <p className="text-sm text-gray-600">
-          The model compares Free Trial and Freemium strategies by calculating profits over time. It uses common inputs like initial users, price, and retention rate for both, while using a simple conversion rate for Free Trial and a gradual conversion curve plus growth rate for Freemium. The model applies costs and discounts future earnings to show which strategy is more profitable long-term.{' '}
+          This model compares Free Trial and Freemium strategies by calculating Net Present Value (NPV) over time. Both models use common inputs like initial users, price, and retention rate. The Free Trial model assumes a constant influx of new users with a fixed conversion rate, while the Freemium model uses an S-curve for gradual conversion and includes a network growth factor. The model accounts for Customer Acquisition Costs and applies a discount rate to future earnings, providing insights into long-term profitability.{' '}
           <a
             href="https://github.com/circularr/bistool/blob/main/src/pages/data/prompt.md"
             target="_blank"
