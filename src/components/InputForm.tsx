@@ -111,7 +111,7 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
           Adjust Adoption Curve
         </button>
         <p className="text-sm text-gray-600">
-          This model compares Free Trial and Freemium business strategies, using factors like customer acquisition, retention, and conversion rates to predict long-term profitability. The Freemium model incorporates an S-curve to estimate user adoption over time, reflecting the typical pattern of slow initial uptake, rapid growth, then plateau.{' '}
+          Compares Free Trial and Freemium strategies, with Freemium uniquely modeled for network effects and organic growth using an S-curve adoption pattern.{' '}
           <a
             href="https://github.com/circularr/bistool/blob/main/src/pages/data/prompt.md"
             target="_blank"

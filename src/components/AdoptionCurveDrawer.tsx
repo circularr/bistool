@@ -14,6 +14,8 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
   const [b, setB] = useState(initialB);
   const [aInput, setAInput] = useState(initialA.toFixed(2));
   const [bInput, setBInput] = useState(initialB.toFixed(2));
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragPoint, setDragPoint] = useState<'start' | 'inflection' | 'saturation' | null>(null);
 
   const formatValue = useCallback((value: number) => {
     if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
@@ -97,12 +99,12 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
     controlPoints.forEach((point, index) => {
       ctx.beginPath();
       ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
-      ctx.fillStyle = 'blue';
+      ctx.fillStyle = dragPoint === ['start', 'inflection', 'saturation'][index] ? 'red' : 'blue';
       ctx.fill();
       ctx.fillStyle = 'black';
       ctx.fillText(['Start', 'Inflection', 'Saturation'][index], point.x + 5, point.y - 5);
     });
-  }, [a, b, N, T, formatXAxis, formatValue]);
+  }, [a, b, N, T, formatXAxis, formatValue, dragPoint]);
 
   useEffect(() => {
     const resizeCanvas = () => {
@@ -128,7 +130,7 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
     drawCurve();
   };
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -136,10 +138,45 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const newB = (x / canvas.width) * T;
-    const newA = -Math.log((canvas.height / y) - 1) / (newB - T/2);
+    const controlPoints = [
+      { x: 0, y: canvas.height },
+      { x: b * (canvas.width / T), y: canvas.height / 2 },
+      { x: canvas.width, y: canvas.height * 0.1 }
+    ];
 
-    updateCurve(newA, newB);
+    const clickedPoint = controlPoints.findIndex(point => 
+      Math.sqrt(Math.pow(x - point.x, 2) + Math.pow(y - point.y, 2)) < 10
+    );
+
+    if (clickedPoint !== -1) {
+      setIsDragging(true);
+      setDragPoint(['start', 'inflection', 'saturation'][clickedPoint]);
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging || !dragPoint) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (dragPoint === 'inflection') {
+      const newB = (x / canvas.width) * T;
+      const newA = -Math.log((canvas.height / y) - 1) / (newB - T/2);
+      updateCurve(newA, newB);
+    } else if (dragPoint === 'saturation') {
+      const newA = -Math.log((canvas.height / y) - 1) / (T - b);
+      updateCurve(newA, b);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setDragPoint(null);
   };
 
   const handleManualInput = (param: 'a' | 'b', value: string) => {
@@ -163,13 +200,15 @@ const AdoptionCurveDrawer: React.FC<AdoptionCurveDrawerProps> = ({ onChange, ini
     <div className="mt-8 bg-gray-50 p-4 sm:p-6 rounded-lg shadow-sm">
       <h3 className="text-xl font-semibold text-gray-800 mb-2">Adoption Curve Profile</h3>
       <p className="text-sm text-gray-600 mb-4">
-        This curve represents how users adopt and convert over time. 
-        Adjust the curve by clicking and dragging, or use the inputs below.
+        Drag the inflection and saturation points to adjust the curve, or use the inputs below.
       </p>
       <div className="w-full" style={{ maxWidth: '400px', margin: '0 auto' }}>
         <canvas
           ref={canvasRef}
-          onClick={handleCanvasClick}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
           className="w-full border border-gray-200 rounded-lg shadow-inner cursor-pointer mb-4"
         />
       </div>

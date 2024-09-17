@@ -1,14 +1,14 @@
 export interface Params {
-  N: number;
-  p: number;
-  c_trial: number;
-  a: number;
-  b: number;
-  r: number;
-  CAC: number;
-  d: number;
-  g: number;
-  T: number;
+  N: number;  // Initial number of users
+  p: number;  // Price of the premium version
+  c_trial: number;  // Conversion rate for trial (equivalent to 'c' in the paper)
+  a: number;  // Steepness of S-curve for freemium
+  b: number;  // Inflection point of S-curve for freemium
+  r: number;  // Retention rate
+  CAC: number;  // Customer Acquisition Cost
+  d: number;  // Discount rate
+  g: number;  // Network growth rate (for freemium)
+  T: number;  // Total time periods
 }
 
 export interface MonthlyData {
@@ -19,24 +19,33 @@ export interface MonthlyData {
   freemiumMAU: number;
 }
 
-// Helper function to calculate the S-curve value
-const calculateSCurve = (t: number, a: number, b: number): number => {
+// S-curve function for freemium conversion
+const sCurve = (t: number, a: number, b: number): number => {
   return 1 / (1 + Math.exp(-a * (t - b)));
 };
 
 export const calculateTrialNPV = (params: Params): number => {
   const { N, p, c_trial, r, CAC, d, T } = params;
   let NPV = 0;
-  let users = N * c_trial;
 
   for (let t = 1; t <= T; t++) {
+    // Users who convert and are retained
+    const users = N * c_trial * Math.pow(r, t - 1);
+    
+    // Revenue
     const revenue = users * p;
-    const costs = t === 1 ? users * CAC : 0; // CAC is only applied in the first month
+    
+    // Costs (CAC applied to all converted users, as per the paper)
+    const costs = t === 1 ? N * c_trial * CAC : 0;
+    
+    // Cash flow
     const cashFlow = revenue - costs;
-    const discountFactor = 1 / Math.pow(1 + d, t);
+    
+    // Discount factor
+    const discountFactor = Math.pow(1 + d, -t);
+    
+    // NPV for this period
     NPV += cashFlow * discountFactor;
-
-    users *= r; // Apply retention rate
   }
 
   return NPV;
@@ -46,62 +55,73 @@ export const calculateFreemiumNPV = (params: Params): number => {
   const { N, p, a, b, r, CAC, d, g, T } = params;
   let NPV = 0;
   let totalUsers = N;
-  let paidUsers = 0;
 
   for (let t = 1; t <= T; t++) {
-    const conversionRate = calculateSCurve(t, a, b);
-    const newPaidUsers = totalUsers * (conversionRate - (t > 1 ? calculateSCurve(t - 1, a, b) : 0));
-    paidUsers = paidUsers * r + newPaidUsers;
-
-    const revenue = paidUsers * p;
-    const costs = newPaidUsers * CAC;
+    // Current conversion rate
+    const c_t = sCurve(t, a, b);
+    
+    // Users who convert and are retained
+    const payingUsers = totalUsers * c_t * Math.pow(r, t - 1);
+    
+    // Revenue
+    const revenue = payingUsers * p;
+    
+    // New conversions this period
+    const newConversions = t === 1 ? payingUsers : totalUsers * (sCurve(t, a, b) - sCurve(t - 1, a, b));
+    
+    // Costs (CAC applied to new conversions)
+    const costs = newConversions * CAC;
+    
+    // Cash flow
     const cashFlow = revenue - costs;
-    const discountFactor = 1 / Math.pow(1 + d, t);
+    
+    // Discount factor
+    const discountFactor = Math.pow(1 + d, -t);
+    
+    // NPV for this period
     NPV += cashFlow * discountFactor;
-
-    totalUsers *= (1 + g); // Apply growth rate
+    
+    // Update total users for next period
+    totalUsers *= (1 + g);
   }
 
   return NPV;
 };
 
 export const calculateMonthlyData = (params: Params): MonthlyData[] => {
-  const { N, p, c_trial, a, b, r, CAC, d, g, T } = params;
+  const monthlyData: MonthlyData[] = [];
   let trialNPV = 0;
   let freemiumNPV = 0;
-  let trialUsers = N * c_trial;
-  let freemiumTotalUsers = N;
-  let freemiumPaidUsers = 0;
-  const monthlyData: MonthlyData[] = [];
+  let trialUsers = params.N;
+  let freemiumUsers = params.N;
 
-  for (let t = 1; t <= T; t++) {
+  for (let t = 1; t <= params.T; t++) {
     // Trial calculations
-    const trialRevenue = trialUsers * p;
-    const trialCosts = t === 1 ? trialUsers * CAC : 0;
+    const trialPayingUsers = trialUsers * params.c_trial * Math.pow(params.r, t - 1);
+    const trialRevenue = trialPayingUsers * params.p;
+    const trialCosts = t === 1 ? trialUsers * params.c_trial * params.CAC : 0;
     const trialCashFlow = trialRevenue - trialCosts;
-    const discountFactor = 1 / Math.pow(1 + d, t);
-    trialNPV += trialCashFlow * discountFactor;
+    trialNPV += trialCashFlow * Math.pow(1 + params.d, -t);
 
     // Freemium calculations
-    const conversionRate = calculateSCurve(t, a, b);
-    const newPaidUsers = freemiumTotalUsers * (conversionRate - (t > 1 ? calculateSCurve(t - 1, a, b) : 0));
-    freemiumPaidUsers = freemiumPaidUsers * r + newPaidUsers;
-    const freemiumRevenue = freemiumPaidUsers * p;
-    const freemiumCosts = newPaidUsers * CAC;
+    const freemiumConversionRate = sCurve(t, params.a, params.b);
+    const freemiumPayingUsers = freemiumUsers * freemiumConversionRate * Math.pow(params.r, t - 1);
+    const freemiumRevenue = freemiumPayingUsers * params.p;
+    const newFreemiumConversions = t === 1 ? freemiumPayingUsers : freemiumUsers * (sCurve(t, params.a, params.b) - sCurve(t - 1, params.a, params.b));
+    const freemiumCosts = newFreemiumConversions * params.CAC;
     const freemiumCashFlow = freemiumRevenue - freemiumCosts;
-    freemiumNPV += freemiumCashFlow * discountFactor;
+    freemiumNPV += freemiumCashFlow * Math.pow(1 + params.d, -t);
 
     monthlyData.push({
       month: t,
       trialNPV,
       freemiumNPV,
       trialMAU: trialUsers,
-      freemiumMAU: freemiumTotalUsers,
+      freemiumMAU: freemiumUsers,
     });
 
-    // Update for next month
-    trialUsers *= r;
-    freemiumTotalUsers *= (1 + g);
+    // Update user numbers for next month
+    freemiumUsers *= (1 + params.g);
   }
 
   return monthlyData;

@@ -43,6 +43,10 @@ const HomePage: React.FC = () => {
 
   const calculateResults = useCallback((currentParams: typeof params) => {
     const monthlyData = calculateMonthlyData(currentParams);
+    if (monthlyData.length === 0) {
+      setResults(null);
+      return;
+    }
     const lastMonth = monthlyData[monthlyData.length - 1];
 
     let breakEvenMonth = null;
