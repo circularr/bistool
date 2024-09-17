@@ -92,7 +92,7 @@ export const calculateMonthlyData = (params: Params): MonthlyData[] => {
   const monthlyData: MonthlyData[] = [];
   let trialNPV = 0;
   let freemiumNPV = 0;
-  const trialUsers = params.N;
+  let trialUsers = params.N;
   let freemiumUsers = params.N;
 
   for (let t = 1; t <= params.T; t++) {
@@ -116,11 +116,12 @@ export const calculateMonthlyData = (params: Params): MonthlyData[] => {
       month: t,
       trialNPV,
       freemiumNPV,
-      trialMAU: trialUsers,
+      trialMAU: trialPayingUsers,  // Changed from trialUsers to trialPayingUsers
       freemiumMAU: freemiumUsers,
     });
 
     // Update user numbers for next month
+    trialUsers *= params.r;  // Apply retention rate to trial users
     freemiumUsers *= (1 + params.g);
   }
 
