@@ -103,12 +103,25 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {Object.keys(params).filter(key => !['a', 'b'].includes(key)).map(renderInput)}
       </div>
-      <button
-        onClick={onAdoptionCurveToggle}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition duration-300"
-      >
-        Adjust Adoption Curve
-      </button>
+      <div className="space-y-4">
+        <button
+          onClick={onAdoptionCurveToggle}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition duration-300"
+        >
+          Adjust Adoption Curve
+        </button>
+        <p className="text-sm text-gray-600">
+          This model compares Free Trial and Freemium business strategies, using factors like customer acquisition, retention, and conversion rates to predict long-term profitability. The Freemium model incorporates an S-curve to estimate user adoption over time, reflecting the typical pattern of slow initial uptake, rapid growth, then plateau.{' '}
+          <a
+            href="https://github.com/circularr/bistool/blob/main/src/pages/data/prompt.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            Read more
+          </a>
+        </p>
+      </div>
     </div>
   );
 };
