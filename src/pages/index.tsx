@@ -102,7 +102,7 @@ const HomePage: React.FC = () => {
 
   const renderMobileView = () => (
     <div className="min-h-screen bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold text-center mb-4">Free Trial vs Freemium</h1>
+      <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Free Trial vs Freemium</h1>
       
       <AnimatePresence>
         {!showInputs && (
@@ -179,7 +179,7 @@ const HomePage: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold mb-4">Input Parameters</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Input Parameters</h2>
             <InputForm
               initialParams={params}
               onParamChange={handleParamChange}
@@ -188,7 +188,7 @@ const HomePage: React.FC = () => {
             />
           </div>
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold mb-4">Results</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Results</h2>
             <ResultsDisplay results={results} T={params.T} />
           </div>
         </div>
@@ -233,7 +233,7 @@ const HomePage: React.FC = () => {
           {isMobile ? renderMobileView() : renderDesktopView()}
         </div>
 
-        <footer className="mt-12 text-center text-gray-500">
+        <footer className="mt-12 text-center text-gray-600">
           <p className="mb-4">
             Created by Claude, Omni, Cursor, and Perplexity | Contributor: Paul Harwood
           </p>

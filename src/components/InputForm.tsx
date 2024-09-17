@@ -51,7 +51,7 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
 
     return (
       <div key={key} className="mb-4">
-        <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={key} className="block text-sm font-medium text-gray-800 mb-1">
           {param.industryTerm} ({param.unit})
         </label>
         <div className="relative mt-1 rounded-md shadow-sm">
@@ -61,7 +61,7 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
             name={key}
             value={value}
             onChange={handleChange}
-            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md"
+            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md text-gray-800"
             step={['c_trial', 'r', 'd', 'g'].includes(key) ? '0.01' : '1'}
             min="0"
           />
@@ -70,12 +70,12 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
               <div className="text-sm">
                 <p className="font-semibold mb-1">{param.industryTerm}</p>
                 <p className="mb-2">{param.definition}</p>
-                <p className="text-xs text-gray-600">Range: {param.inputRange}</p>
+                <p className="text-xs text-gray-700">Range: {param.inputRange}</p>
               </div>
             </Tooltip>
             <span 
               data-tooltip-id={`tooltip-${key}`}
-              className="text-gray-400 hover:text-gray-500 cursor-help"
+              className="text-gray-500 hover:text-gray-700 cursor-help"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
@@ -92,7 +92,7 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
       <div className="flex justify-end">
         <button
           onClick={onReset}
-          className="text-gray-600 hover:text-gray-800"
+          className="text-gray-700 hover:text-gray-900"
           title="Reset All Parameters"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -105,7 +105,7 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
       </div>
       <button
         onClick={onAdoptionCurveToggle}
-        className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition duration-300"
       >
         Adjust Adoption Curve
       </button>
