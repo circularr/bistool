@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import InputForm from '../components/InputForm';
 import ResultsDisplay from '../components/ResultsDisplay';
 import AdoptionCurveDrawer from '../components/AdoptionCurveDrawer';
-import { calculateTrialNPV, calculateFreemiumNPV } from '../utils/calculations';
+import { calculateMonthlyData, MonthlyData } from '../utils/calculations';
 import { useRouter } from 'next/router';
 
 const HomePage: React.FC = () => {
@@ -25,7 +25,7 @@ const HomePage: React.FC = () => {
     trialNPV: number;
     freemiumNPV: number;
     breakEvenMonth: number | null;
-    monthlyData: { month: number; trialNPV: number; freemiumNPV: number; trialMAU: number; freemiumMAU: number }[];
+    monthlyData: MonthlyData[];
   } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [showInputs, setShowInputs] = useState(false);
@@ -42,38 +42,20 @@ const HomePage: React.FC = () => {
   }, []);
 
   const calculateResults = useCallback((currentParams: typeof params) => {
-    const trialNPV = calculateTrialNPV(currentParams);
-    const freemiumNPV = calculateFreemiumNPV(currentParams);
+    const monthlyData = calculateMonthlyData(currentParams);
+    const lastMonth = monthlyData[monthlyData.length - 1];
 
     let breakEvenMonth = null;
-    let cumulativeTrialNPV = 0;
-    let cumulativeFreemiumNPV = 0;
-    const monthlyData = [];
-    for (let t = 1; t <= currentParams.T; t++) {
-      const paramsAtT = { ...currentParams, T: t };
-      const monthlyTrialNPV = calculateTrialNPV(paramsAtT);
-      const monthlyFreemiumNPV = calculateFreemiumNPV(paramsAtT);
-      cumulativeTrialNPV += monthlyTrialNPV;
-      cumulativeFreemiumNPV += monthlyFreemiumNPV;
-      
-      const trialMAU = currentParams.N * currentParams.c_trial * Math.pow(currentParams.r, t - 1);
-      const freemiumMAU = currentParams.N * Math.pow(1 + currentParams.g, t - 1);
-      
-      monthlyData.push({
-        month: t,
-        trialNPV: cumulativeTrialNPV,
-        freemiumNPV: cumulativeFreemiumNPV,
-        trialMAU,
-        freemiumMAU,
-      });
-      if (cumulativeFreemiumNPV >= cumulativeTrialNPV && breakEvenMonth === null) {
-        breakEvenMonth = t;
+    for (let i = 0; i < monthlyData.length; i++) {
+      if (monthlyData[i].freemiumNPV >= monthlyData[i].trialNPV) {
+        breakEvenMonth = i + 1;
+        break;
       }
     }
 
     setResults({
-      trialNPV,
-      freemiumNPV,
+      trialNPV: lastMonth.trialNPV,
+      freemiumNPV: lastMonth.freemiumNPV,
       breakEvenMonth,
       monthlyData,
     });
