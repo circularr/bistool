@@ -101,56 +101,62 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, T }) => {
         <div className="bg-blue-50 p-4 rounded-md">
           <h3 className="text-lg font-semibold text-blue-800 mb-2">Free Trial Model</h3>
           <p className="text-3xl font-bold text-blue-600 mb-2">${formatValue(results.trialNPV)}</p>
-          <p className="text-sm text-blue-800 mb-4">
-            Net Present Value: Total value of future cash flows, adjusted for time and risk.
-          </p>
-          <p className="text-xl font-semibold text-blue-800 mb-2">Monthly Active Users: {formatValue(results.monthlyData[results.monthlyData.length - 1]?.trialMAU || 0)}</p>
           <p className="text-sm text-blue-800">
-            Number of active users at {T > 12 ? `year ${(T / 12).toFixed(1)}` : `month ${T}`}.
+            NPV: Total value of future cash flows
+          </p>
+          <p className="text-xl font-semibold text-blue-800 mt-4 mb-2">
+            MAU: {formatValue(results.monthlyData[results.monthlyData.length - 1]?.trialMAU || 0)}
+          </p>
+          <p className="text-sm text-blue-800">
+            Active users at {T > 12 ? `year ${(T / 12).toFixed(1)}` : `month ${T}`}
           </p>
         </div>
         <div className="bg-green-50 p-4 rounded-md">
           <h3 className="text-lg font-semibold text-green-800 mb-2">Freemium Model</h3>
           <p className="text-3xl font-bold text-green-600 mb-2">${formatValue(results.freemiumNPV)}</p>
-          <p className="text-sm text-green-800 mb-4">
-            Net Present Value: Total value of future cash flows, adjusted for time and risk.
-          </p>
-          <p className="text-xl font-semibold text-green-800 mb-2">Monthly Active Users: {formatValue(results.monthlyData[results.monthlyData.length - 1]?.freemiumMAU || 0)}</p>
           <p className="text-sm text-green-800">
-            Number of active users at {T > 12 ? `year ${(T / 12).toFixed(1)}` : `month ${T}`}.
+            NPV: Total value of future cash flows
+          </p>
+          <p className="text-xl font-semibold text-green-800 mt-4 mb-2">
+            MAU: {formatValue(results.monthlyData[results.monthlyData.length - 1]?.freemiumMAU || 0)}
+          </p>
+          <p className="text-sm text-green-800">
+            Active users at {T > 12 ? `year ${(T / 12).toFixed(1)}` : `month ${T}`}
           </p>
         </div>
       </div>
-      <div className="h-80">
+      <div className="bg-white p-4 rounded-md shadow">
         <div className="mb-4 flex justify-between items-center">
-          <h3 className="text-xl font-semibold text-gray-700">Performance Over Time</h3>
+          <h3 className="text-lg font-semibold text-gray-700">Performance Over Time</h3>
           <button
             onClick={() => setShowMAU(!showMAU)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
+            className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition duration-300"
           >
             {showMAU ? "Show NPV" : "Show MAU"}
           </button>
         </div>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={results.monthlyData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" tickFormatter={formatXAxis} />
-            <YAxis tickFormatter={formatValue} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-            {showMAU ? (
-              <>
-                <Line type="monotone" dataKey="trialMAU" stroke="#3b82f6" name="Free Trial MAU" />
-                <Line type="monotone" dataKey="freemiumMAU" stroke="#10b981" name="Freemium MAU" />
-              </>
-            ) : (
-              <>
-                <Line type="monotone" dataKey="trialNPV" stroke="#3b82f6" name="Free Trial NPV" />
-                <Line type="monotone" dataKey="freemiumNPV" stroke="#10b981" name="Freemium NPV" />
-              </>
-            )}
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={results.monthlyData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" tickFormatter={formatXAxis} />
+              <YAxis tickFormatter={formatValue} />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              {showMAU ? (
+                <>
+                  <Line type="monotone" dataKey="trialMAU" stroke="#3b82f6" name="Free Trial MAU" />
+                  <Line type="monotone" dataKey="freemiumMAU" stroke="#10b981" name="Freemium MAU" />
+                </>
+              ) : (
+                <>
+                  <Line type="monotone" dataKey="trialNPV" stroke="#3b82f6" name="Free Trial NPV" />
+                  <Line type="monotone" dataKey="freemiumNPV" stroke="#10b981" name="Freemium NPV" />
+                </>
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
