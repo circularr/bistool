@@ -25,3 +25,28 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Updated tooltip styles */
+.react-tooltip {
+  background-color: #ffffff !important; /* White background */
+  color: #1f2937 !important; /* Dark gray text */
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  font-size: 0.875rem !important;
+  padding: 0.5rem 1rem !important;
+  max-width: 300px !important;
+  z-index: 1000 !important;
+}
+
+.react-tooltip-arrow {
+  display: none !important;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .react-tooltip {
+    background-color: #374151 !important; /* Dark background */
+    color: #f3f4f6 !important; /* Light gray text */
+    border-color: #4b5563 !important;
+  }
+}

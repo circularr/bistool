@@ -106,8 +106,6 @@ const HomePage: React.FC = () => {
 
   const renderMobileView = () => (
     <div className="min-h-screen bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Free Trial vs Freemium</h1>
-      
       {renderKeyParameters()}
       <ResultsDisplay results={results} T={params.T} />
       
