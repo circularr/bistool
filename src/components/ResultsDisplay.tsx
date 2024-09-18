@@ -79,18 +79,38 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, T }) => {
           <p className="text-xl font-bold text-green-600">${formatValue(results.freemiumNPV)}</p>
         </div>
       </div>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={results.monthlyData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" tickFormatter={formatXAxis} />
-            <YAxis tickFormatter={formatValue} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-            <Line type="monotone" dataKey="trialNPV" stroke="#3b82f6" name="Free Trial" />
-            <Line type="monotone" dataKey="freemiumNPV" stroke="#10b981" name="Freemium" />
-          </LineChart>
-        </ResponsiveContainer>
+      <div className="bg-white p-4 rounded-md shadow">
+        <div className="mb-4 flex justify-between items-center">
+          <h3 className="text-sm font-semibold text-gray-700">Performance Over Time</h3>
+          <button
+            onClick={() => setShowMAU(!showMAU)}
+            className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition duration-300"
+          >
+            {showMAU ? "Show NPV" : "Show MAU"}
+          </button>
+        </div>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={results.monthlyData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" tickFormatter={formatXAxis} />
+              <YAxis tickFormatter={formatValue} />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              {showMAU ? (
+                <>
+                  <Line type="monotone" dataKey="trialMAU" stroke="#3b82f6" name="Free Trial MAU" />
+                  <Line type="monotone" dataKey="freemiumMAU" stroke="#10b981" name="Freemium MAU" />
+                </>
+              ) : (
+                <>
+                  <Line type="monotone" dataKey="trialNPV" stroke="#3b82f6" name="Free Trial NPV" />
+                  <Line type="monotone" dataKey="freemiumNPV" stroke="#10b981" name="Freemium NPV" />
+                </>
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

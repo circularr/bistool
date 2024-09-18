@@ -3,9 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import InputForm from '../components/InputForm';
 import ResultsDisplay from '../components/ResultsDisplay';
 import AdoptionCurveDrawer from '../components/AdoptionCurveDrawer';
-import { calculateMonthlyData, MonthlyData } from '../utils/calculations';
-import { useRouter } from 'next/router';
-import { Tooltip } from 'react-tooltip';
+import { calculateMonthlyData } from '../utils/calculations';
 
 const HomePage: React.FC = () => {
   const initialParams = {
@@ -25,7 +23,6 @@ const HomePage: React.FC = () => {
   const [showDescription, setShowDescription] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showAdoptionCurve, setShowAdoptionCurve] = useState(false);
-  const router = useRouter();
 
   const results = useMemo(() => {
     const monthlyData = calculateMonthlyData(params);
@@ -61,7 +58,7 @@ const HomePage: React.FC = () => {
 
   const resetAll = useCallback(() => {
     setParams(initialParams);
-  }, []);
+  }, [initialParams]);
 
   const toggleAdoptionCurve = useCallback(() => {
     setShowAdoptionCurve(prev => !prev);
