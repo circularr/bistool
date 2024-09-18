@@ -16,11 +16,9 @@ interface InputFormProps {
     T: number;
   };
   onParamChange: (params: InputFormProps['initialParams']) => void;
-  onReset: () => void;
-  onAdoptionCurveToggle: () => void;
 }
 
-const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onReset, onAdoptionCurveToggle }) => {
+const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange }) => {
   const [params, setParams] = useState(initialParams);
 
   useEffect(() => {
@@ -43,9 +41,9 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
 
   const renderInput = (key: string) => {
     const param = keyTerms.parameters.find(p => p.name === key.toUpperCase());
-    if (!param) return null;
+    if (!param || key === 'c_trial') return null;
 
-    const value = ['c_trial', 'r', 'd', 'g'].includes(key) 
+    const value = ['r', 'd', 'g'].includes(key) 
       ? (params[key as keyof typeof params] * 100).toFixed(2)
       : params[key as keyof typeof params];
 
@@ -62,7 +60,7 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
             value={value}
             onChange={handleChange}
             className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md text-gray-800"
-            step={['c_trial', 'r', 'd', 'g'].includes(key) ? '0.01' : '1'}
+            step={['r', 'd', 'g'].includes(key) ? '0.01' : '1'}
             min="0"
           />
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -89,38 +87,8 @@ const InputForm: React.FC<InputFormProps> = ({ initialParams, onParamChange, onR
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <button
-          onClick={onReset}
-          className="text-gray-700 hover:text-gray-900"
-          title="Reset All Parameters"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {Object.keys(params).filter(key => !['a', 'b'].includes(key)).map(renderInput)}
-      </div>
-      <div className="space-y-4">
-        <button
-          onClick={onAdoptionCurveToggle}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition duration-300"
-        >
-          Adjust Adoption Curve
-        </button>
-        <p className="text-sm text-gray-600">
-          This model compares Free Trial and Freemium strategies by calculating Net Present Value (NPV) over time. Both models use common inputs like initial users, price, and retention rate. The Free Trial model assumes a constant influx of new users with a fixed conversion rate, while the Freemium model uses an S-curve for gradual conversion and includes a network growth factor. The model accounts for Customer Acquisition Costs and applies a discount rate to future earnings, providing insights into long-term profitability.{' '}
-          <a
-            href="https://github.com/circularr/bistool/blob/main/src/pages/data/prompt.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 hover:underline"
-          >
-            Read more
-          </a>
-        </p>
       </div>
     </div>
   );

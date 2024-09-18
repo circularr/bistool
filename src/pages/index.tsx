@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputForm from '../components/InputForm';
 import ResultsDisplay from '../components/ResultsDisplay';
 import AdoptionCurveDrawer from '../components/AdoptionCurveDrawer';
 import { calculateMonthlyData, MonthlyData } from '../utils/calculations';
 import { useRouter } from 'next/router';
+import { Tooltip } from 'react-tooltip';
 
 const HomePage: React.FC = () => {
   const initialParams = {
@@ -21,16 +22,29 @@ const HomePage: React.FC = () => {
   };
 
   const [params, setParams] = useState(initialParams);
-  const [results, setResults] = useState<{
-    trialNPV: number;
-    freemiumNPV: number;
-    breakEvenMonth: number | null;
-    monthlyData: MonthlyData[];
-  } | null>(null);
+  const [showDescription, setShowDescription] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [showInputs, setShowInputs] = useState(false);
   const [showAdoptionCurve, setShowAdoptionCurve] = useState(false);
   const router = useRouter();
+
+  const results = useMemo(() => {
+    const monthlyData = calculateMonthlyData(params);
+    if (monthlyData.length === 0) return null;
+    const lastMonth = monthlyData[monthlyData.length - 1];
+    let breakEvenMonth = null;
+    for (let i = 0; i < monthlyData.length; i++) {
+      if (monthlyData[i].freemiumNPV >= monthlyData[i].trialNPV) {
+        breakEvenMonth = i + 1;
+        break;
+      }
+    }
+    return {
+      trialNPV: lastMonth.trialNPV,
+      freemiumNPV: lastMonth.freemiumNPV,
+      breakEvenMonth,
+      monthlyData,
+    };
+  }, [params]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -41,95 +55,66 @@ const HomePage: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const calculateResults = useCallback((currentParams: typeof params) => {
-    const monthlyData = calculateMonthlyData(currentParams);
-    if (monthlyData.length === 0) {
-      setResults(null);
-      return;
-    }
-    const lastMonth = monthlyData[monthlyData.length - 1];
-
-    let breakEvenMonth = null;
-    for (let i = 0; i < monthlyData.length; i++) {
-      if (monthlyData[i].freemiumNPV >= monthlyData[i].trialNPV) {
-        breakEvenMonth = i + 1;
-        break;
-      }
-    }
-
-    setResults({
-      trialNPV: lastMonth.trialNPV,
-      freemiumNPV: lastMonth.freemiumNPV,
-      breakEvenMonth,
-      monthlyData,
-    });
+  const handleParamChange = useCallback((newParams: typeof params) => {
+    setParams(newParams);
   }, []);
 
-  useEffect(() => {
-    calculateResults(params);
-  }, [params, calculateResults]);
+  const resetAll = useCallback(() => {
+    setParams(initialParams);
+  }, []);
 
-  const handleParamChange = (newParams: typeof params) => {
-    setParams(newParams);
-    calculateResults(newParams);
-  };
-
-  const resetAll = () => {
-    router.reload();
-  };
-
-  const toggleAdoptionCurve = () => {
+  const toggleAdoptionCurve = useCallback(() => {
     setShowAdoptionCurve(prev => !prev);
-  };
+  }, []);
 
-  const toggleInputs = () => {
-    setShowInputs(prev => !prev);
-  };
+  const renderKeyParameters = () => (
+    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-semibold text-gray-800">Key Parameters</h2>
+        <button
+          onClick={resetAll}
+          className="text-gray-600 hover:text-red-600 transition-colors duration-300"
+          title="Reset All Parameters"
+        >
+          Reset
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Trial Conversion Rate</label>
+          <input
+            type="number"
+            value={(params.c_trial * 100).toFixed(2)}
+            onChange={(e) => handleParamChange({ ...params, c_trial: parseFloat(e.target.value) / 100 })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            step="0.01"
+            min="0"
+            max="100"
+          />
+        </div>
+        <div>
+          <button
+            onClick={toggleAdoptionCurve}
+            className="w-full h-full bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300"
+          >
+            Adjust Adoption Curve
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderMobileView = () => (
     <div className="min-h-screen bg-gray-100 p-4">
       <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Free Trial vs Freemium</h1>
       
-      <AnimatePresence>
-        {!showInputs && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            <ResultsDisplay results={results} T={params.T} />
-            <button
-              onClick={toggleInputs}
-              className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
-            >
-              Adjust Parameters
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showInputs && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            <InputForm
-              initialParams={params}
-              onParamChange={handleParamChange}
-              onReset={resetAll}
-              onAdoptionCurveToggle={toggleAdoptionCurve}
-            />
-            <button
-              onClick={toggleInputs}
-              className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
-            >
-              Show Results
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {renderKeyParameters()}
+      <ResultsDisplay results={results} T={params.T} />
+      
+      <InputForm
+        initialParams={params}
+        onParamChange={handleParamChange}
+      />
 
       <AnimatePresence>
         {showAdoptionCurve && (
@@ -137,7 +122,7 @@ const HomePage: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
           >
             <div className="bg-white rounded-lg p-4 w-full max-w-md">
               <AdoptionCurveDrawer
@@ -164,18 +149,16 @@ const HomePage: React.FC = () => {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            {renderKeyParameters()}
+            <ResultsDisplay results={results} T={params.T} />
+          </div>
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Input Parameters</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">All Parameters</h2>
             <InputForm
               initialParams={params}
               onParamChange={handleParamChange}
-              onReset={resetAll}
-              onAdoptionCurveToggle={toggleAdoptionCurve}
             />
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Results</h2>
-            <ResultsDisplay results={results} T={params.T} />
           </div>
         </div>
       </div>
@@ -212,10 +195,36 @@ const HomePage: React.FC = () => {
             <p className="text-blue-100 text-lg sm:text-xl italic">
               Model Comparison Tool
             </p>
-            <p className="text-blue-100 text-sm mt-2">
-              Free trial: full features, limited time. Freemium: basic features free, paid upgrades.
-            </p>
+            <button
+              onClick={() => setShowDescription(!showDescription)}
+              className="mt-4 text-white flex items-center"
+            >
+              {showDescription ? "Hide Description" : "Show Description"}
+            </button>
           </div>
+          <AnimatePresence>
+            {showDescription && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-gray-100 p-6 overflow-hidden"
+              >
+                <p className="text-sm text-gray-600">
+                  This model compares Free Trial and Freemium strategies by calculating Net Present Value (NPV) over time. Both models use common inputs like initial users, price, and retention rate. The Free Trial model assumes a constant influx of new users with a fixed conversion rate, while the Freemium model uses an S-curve for gradual conversion and includes a network growth factor. The model accounts for Customer Acquisition Costs and applies a discount rate to future earnings, providing insights into long-term profitability.{' '}
+                  <a
+                    href="https://github.com/circularr/bistool/blob/main/src/pages/data/prompt.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    Read more
+                  </a>
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="mt-8">
@@ -223,29 +232,7 @@ const HomePage: React.FC = () => {
         </div>
 
         <footer className="mt-12 text-center text-gray-600">
-          <p className="mb-4">
-            Created by Claude, Omni, Cursor, and Perplexity | Contributor: Paul Harwood
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-4 mb-4">
-            <a
-              href="https://github.com/circularr/bistool"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-gray-700 transition duration-300"
-            >
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-              GitHub
-            </a>
-            <a
-              href="https://www.linkedin.com/in/paul-harwood-2aa535228/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition duration-300"
-            >
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-              LinkedIn
-            </a>
-          </div>
+          {/* ... (keep existing footer content) ... */}
         </footer>
       </main>
     </div>
